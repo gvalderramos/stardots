@@ -1,14 +1,11 @@
-file(GLOB_RECURSE LIB_SRC_FILES *.cxx)
-file(GLOB_RECURSE LIB_INC_FILES *.h)
-
-
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(StarDots ${LIB_SRC_FILES}
         core/node.cpp
         core/node.h
         core/plug.h
         core/node_manager.cpp
-        core/node_manager.h)
+        core/node_manager.h
+        stardots.h)
 
 target_sources(StarDots PUBLIC FILE_SET HEADERS FILES ${LIB_INC_FILES})
 

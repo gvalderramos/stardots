@@ -23,7 +23,7 @@ namespace stardots::core {
     }
 
     std::shared_ptr<Node> NodeManager::operator[](const int &index) const {
-        if(index > m_nodes.size()) {
+        if(index >= m_nodes.size()) {
             return nullptr;
         }
         return m_nodes[index];

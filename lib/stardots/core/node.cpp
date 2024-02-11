@@ -7,32 +7,39 @@
 using namespace stardots::core;
 
 Node::Node() {
-
+    m_plugs[PlugDesc::OUTPUT] = {};
+    m_plugs[PlugDesc::INPUT] = {};
 }
 
 Node::~Node() {
-
+    auto it = m_plugs.begin();
+    while (it != m_plugs.end()) {
+        for (auto plug : it->second) {
+            delete plug;
+        }
+        it++;
+    }
 }
 
 Node::PlugIter Node::inBegin() {
-    return m_inputs.begin();
+    return m_plugs[PlugDesc::INPUT].begin();
 }
 
 Node::PlugIter Node::inEnd() {
-    return m_inputs.end();
+    return m_plugs[PlugDesc::INPUT].end();
 }
 
 Node::PlugIter Node::outBegin() {
-    return m_outputs.begin();
+    return m_plugs[PlugDesc::OUTPUT].begin();
 }
 
 Node::PlugIter Node::outEnd() {
-    return m_outputs.end();
+    return m_plugs[PlugDesc::OUTPUT].end();
 }
 
 std::size_t Node::connectedInputs() const {
     std::size_t result = 0;
-    for(auto& plug: m_inputs) {
+    for(auto& plug: m_plugs.at(PlugDesc::INPUT)) {
         if(plug->isConnected())
             result++;
     }
@@ -41,7 +48,7 @@ std::size_t Node::connectedInputs() const {
 
 std::size_t Node::connectedOutputs() const {
     std::size_t result = 0;
-    for(auto& plug: m_outputs) {
+    for(auto& plug: m_plugs.at(PlugDesc::OUTPUT)) {
         if(plug->isConnected())
             result++;
     }

@@ -14,57 +14,62 @@ namespace stardots::core {
     protected:
         std::string m_type;
     public:
-        virtual ~IPlug() = 0;
+        IPlug() = delete;
+        IPlug(const IPlug&) = delete;
+        IPlug(IPlug&) = delete;
+
+        virtual ~IPlug() {};
         explicit IPlug(const std::string& typeName) : m_type(typeName) {}
         [[nodiscard]] std::string plugType() const {return m_type;};
 
-        [[nodiscard]] virtual std::shared_ptr<IPlug>& next() const = 0;
-        virtual void next(const std::shared_ptr<IPlug>& next) = 0;
+//        [[nodiscard]] virtual std::shared_ptr<IPlug>& next() const = 0;
+//        virtual void next(const std::shared_ptr<IPlug>& next) = 0;
         virtual bool isConnected() const = 0;
 
-        virtual std::shared_ptr<Node>& node() = 0;
+        virtual Node* node() = 0;
+        virtual void node(Node* n) = 0;
     };
 
     template<typename T>
     class Plug : public IPlug {
     private:
-        Plug() = delete;
-        std::shared_ptr<Node> m_node;
-        std::shared_ptr<Plug> m_next;
+        Node* m_node;
+        Plug<T>* m_next;
 
         T m_value;
         std::string m_name;
     public:
-        Plug(const std::shared_ptr<Node>& node, const T& value, const std::string& name)
-                : IPlug(typeid(T).name()), m_node(node), m_value(value), m_name(name) {};
-        Plug(const Plug& other) {
-            m_node = std::move(other.m_node);
-            m_next = std::move(other.m_next);
-            m_value = other.m_value;
-            m_name = other.m_name;
-            m_type = other.m_type;
+        Plug(const T& value, const std::string& name)
+                : IPlug(typeid(T).name()), m_node(nullptr), m_value(value), m_name(name), m_next(nullptr) {};
+        ~Plug() override {
+//            delete m_node;
+//            delete m_next;
         };
-        ~Plug() {};
 
         [[nodiscard]] inline std::string name() const {return m_name; };
 
-        inline void value(const T& v) {m_value = v; };
+        inline void value(const T& v) {
+            if(isConnected()) {
+                m_next->m_value = v;
+                m_value = v;
+            } else {
+                m_value = v;
+            }
+        };
         inline T value() const {return m_value; };
 
-        Plug& operator=(const T& value) {
-            if(m_value != value)
-                m_value = value;
-            return *this;
-        };
-        Plug& operator=(const Plug& other) {
-            return Plug(other);
+        Plug<T>& operator=(const T& value) = delete;
+        Plug<T>& operator=(const Plug<T>& other) = delete;
+
+        Plug<T>* next() const {return m_next; };
+        void next(Plug<T>* next) {
+            m_next = next;
+            next->m_next = this;
         };
 
-        [[nodiscard]] std::shared_ptr<Plug>& next() const override {return m_next; };
-        void next(const std::shared_ptr<Plug>& next) override {m_next = next;};
-        [[nodiscard]] bool isConnected() const override { if (m_next) return true; return false; };
+        Node* node() override {return m_node;};
+        void node(Node* n) override {m_node = n;};
 
-        std::shared_ptr<Node>& node() override {return m_node;};
+        bool isConnected() const override { if (m_next) return true; return false; };
     };
-} // core
-// stardots
+} // stardots::core

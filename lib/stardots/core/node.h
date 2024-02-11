@@ -6,6 +6,7 @@
 #include <vector>
 #include <memory>
 #include <string>
+#include <map>
 
 #include "plug.h"
 
@@ -17,31 +18,42 @@ namespace stardots::core {
     public:
         ~Node();
 
-        typedef std::vector<std::unique_ptr<IPlug>>::iterator PlugIter;
+        typedef std::vector<IPlug*>::iterator PlugIter;
         PlugIter inBegin();
         PlugIter inEnd();
         PlugIter outBegin();
         PlugIter outEnd();
 
         template<typename T>
-        void addInputPlug(const T& value, const std::string& name) {
-            auto plug = std::make_unique<Plug<T>>(new Plug((std::make_shared<Node>(*this), value, name)));
-            m_inputs.push_back(plug);
+        IPlug* addInputPlug(const T& value, const std::string& name) {
+            IPlug* plug;
+            plug = new Plug<T>(value, name);
+            plug->node(this);
+            m_plugs[PlugDesc::INPUT].push_back(plug);
+            return plug;
         }
         template<typename T>
-        void addOutputPlug(const T& value, const std::string& name) {
-            auto plug = std::make_unique<Plug<T>>(new Plug((std::make_shared<Node>(*this), value, name)));
-            m_outputs.push_back(plug);
+        IPlug* addOutputPlug(const T& value, const std::string& name) {
+            auto* plug = new Plug<T>(value, name);
+            plug->node(this);
+            m_plugs[PlugDesc::OUTPUT].push_back(plug);
+            return plug;
         }
 
         std::size_t connectedInputs() const;
         std::size_t connectedOutputs() const;
 
+        inline std::string name() const {return m_name;};
+        inline void name(const std::string& name) {m_name = name;};
     private:
         Node();
 
-        std::vector<std::unique_ptr<IPlug>> m_outputs;
-        std::vector<std::unique_ptr<IPlug>> m_inputs;
+        enum class PlugDesc {
+            OUTPUT = 0,
+            INPUT
+        };
+        std::map<PlugDesc, std::vector<IPlug*>> m_plugs;
+        std::string m_name;
 
         friend class NodeManager;
     };
