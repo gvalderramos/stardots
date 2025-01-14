@@ -2,6 +2,8 @@
 
 Stardots is a C++ framework designed for managing nodal algorithms. It provides a flexible and efficient system to define, connect, and manage computational nodes and their relationships.
 
+[Documentation](https://gvalderramos.github.io/stardots/)
+
 ---
 
 ## Features
